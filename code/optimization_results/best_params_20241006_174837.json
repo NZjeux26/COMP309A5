@@ -1,0 +1,12 @@
+{
+    "hidden_size": 128,
+    "batch_size": 16,
+    "learning_rate": 0.1,
+    "dropout_rate": 0.1,
+    "num_layers": 2,
+    "optimizer": "adam",
+    "weight_decay": 0.0,
+    "mean_val_loss": 1.0838548766530078,
+    "mean_accuracy": 37.584805951689376,
+    "std_accuracy": 1.7333955813438202
+}
