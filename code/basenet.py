@@ -228,7 +228,7 @@ def main():
     hidden_size = 512  # Number of neurons in the hidden layer
     num_classes = 3  # Number of output classes (cherry, strawberry, tomato)
     num_epochs = 25  # Number of training epochs
-    batch_size = 32  # Batch size for training and evaluation
+    batch_size = 64  # Batch size for training and evaluation
     learning_rate = 0.001  # Learning rate for optimizer
     train_split = 0.7  # Percentage of data to use for training
     val_split = 0.15  # Percentage of data to use for validation
@@ -253,7 +253,7 @@ def main():
     transform = transforms.Compose([
         transforms.Resize((112, 112)),
         transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(10),
+        transforms.RandomRotation(15),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize RGB channels
     ])
