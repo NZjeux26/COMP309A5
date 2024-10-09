@@ -250,8 +250,8 @@ def main():
     input_size = 300 * 300 * 3  # Input size for 28x28 RGB images
     hidden_size = 512  # Number of neurons in the hidden layer
     num_classes = 3  # Number of output classes (cherry, strawberry, tomato)
-    num_epochs = 25  # Number of training epochs
-    batch_size = 64  # Batch size for training and evaluation
+    num_epochs = 20  # Number of training epochs
+    batch_size = 32  # Batch size for training and evaluation
     learning_rate = 0.001  # Learning rate for optimizer
     train_split = 0.70  # Percentage of data to use for training
     val_split = 0.15  # Percentage of data to use for validation
