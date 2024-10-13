@@ -48,32 +48,45 @@ class FruitClassifierCNN(nn.Module):
         self.conv_layers = nn.Sequential(
             # First convolutional block: (3 x 299 x 299) -> (32 x 149 x 149)
             nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),  # 299x299 -> 149x149
+            nn.Dropout2d(0.1),
             
             # Second convolutional block: (32 x 149 x 149) -> (64 x 74 x 74)
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),  # 149x149 -> 74x74
-            
+            nn.Dropout2d(0.1),
+             
             # Third convolutional block: (64 x 74 x 74) -> (128 x 37 x 37)
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(128),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),  # 74x74 -> 37x37
-            
+            nn.Dropout2d(0.2),
+             
             # Fourth convolutional block: (128 x 37 x 37) -> (256 x 18 x 18)
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(256),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),  # 37x37 -> 18x18
+            nn.Dropout2d(0.2),
         )
 
         # Fully connected layers
         self.fc_layers = nn.Sequential(
             # The input to the fully connected layer is now 256 * 18 * 18
             nn.Linear(256 * 18 * 18, 512),
+            nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(512, num_classes)  # Output layer
+            nn.Dropout(0.3),
+            nn.Linear(512, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(256, num_classes)  # Output layer
         )
 
     def forward(self, x):
@@ -247,10 +260,10 @@ def plot_training_history(train_losses, val_losses, train_accuracies, val_accura
 
 def main():
     # Hyperparameters
-    input_size = 300 * 300 * 3  # Input size for 28x28 RGB images
-    hidden_size = 512  # Number of neurons in the hidden layer
+   # input_size = 300 * 300 * 3  # Input size for 28x28 RGB images
+   # hidden_size = 512  # Number of neurons in the hidden layer
     num_classes = 3  # Number of output classes (cherry, strawberry, tomato)
-    num_epochs = 20  # Number of training epochs
+    num_epochs = 40  # Number of training epochs
     batch_size = 32  # Batch size for training and evaluation
     learning_rate = 0.001  # Learning rate for optimizer
     train_split = 0.70  # Percentage of data to use for training
@@ -276,6 +289,7 @@ def main():
     transform = transforms.Compose([
         transforms.Resize((299, 299)),
         transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
         transforms.RandomRotation(15),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize RGB channels
