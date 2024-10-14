@@ -9,7 +9,7 @@ from fruit_class import FruitClassifierCNN, FruitDataset, plot_training_history,
 def main():
     # Hyperparameters
     num_classes = 3  # Number of output classes (cherry, strawberry, tomato)
-    num_epochs = 50  # Number of training epochs
+    num_epochs = 100  # Number of training epochs
     batch_size = 32  # Batch size for training
     learning_rate = 0.001  # Learning rate for optimizer
 
