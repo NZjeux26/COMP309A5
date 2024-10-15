@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision.transforms as transforms
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset
 from PIL import Image
 import os
 import numpy as np
@@ -128,7 +127,6 @@ class FruitDataset(Dataset):
 
         return image, label  # Return image and label pair
 
-# Function to train the model
 # Function to train the model (no validation)
 def train_model(model, train_loader, criterion, optimizer, num_epochs, device):
     train_losses = []  # To store training loss for each epoch

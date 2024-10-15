@@ -5,7 +5,7 @@ from PIL import Image
 
 # Define the model and prompt
 model_id = "runwayml/stable-diffusion-v1-5"
-prompt = "A close-up of a photoreal tomatoes in good lighting in various poses, EG in bowls, off plants or on a chopping board"
+prompt = "A close-up of a cherry in good lighting"
 
 def generate_strawberry_images(prompt, num_images, size=(300, 300)):
     # Load the pre-trained Stable Diffusion model
@@ -33,9 +33,9 @@ def generate_strawberry_images(prompt, num_images, size=(300, 300)):
         image = image.resize(size, Image.LANCZOS)
 
         # Save the generated image with a unique filename
-        save_path = f"tomato_image2_{i+1}.png"
+        save_path = f"cherry_image2_{i+1}.png"
         image.save(save_path)
         print(f"Image {i+1} saved as {save_path}")
 
 # Generate 50 strawberry images
-generate_strawberry_images(prompt, num_images=180)
+generate_strawberry_images(prompt, num_images=100)

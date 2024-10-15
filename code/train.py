@@ -9,7 +9,7 @@ from fruit_class import FruitClassifierCNN, FruitDataset, plot_training_history,
 def main():
     # Hyperparameters
     num_classes = 3  # Number of output classes (cherry, strawberry, tomato)
-    num_epochs = 100  # Number of training epochs
+    num_epochs = 40  # Number of training epochs
     batch_size = 32  # Batch size for training
     learning_rate = 0.001  # Learning rate for optimizer
 
@@ -27,7 +27,7 @@ def main():
         transforms.Resize((299, 299)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
-        transforms.RandomRotation(15),
+        transforms.RandomRotation(20),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize RGB channels
     ])
