@@ -127,44 +127,71 @@ class FruitDataset(Dataset):
 
         return image, label  # Return image and label pair
 
-# Function to train the model (no validation)
-def train_model(model, train_loader, criterion, optimizer, num_epochs, device):
-    train_losses = []  # To store training loss for each epoch
-    train_accuracies = []  # To store training accuracy for each epoch
-    
+# Function to train the model
+def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler, num_epochs, device):
+    train_losses = []
+    val_losses = []  # To store validation losses
+    train_accuracies = []
+    val_accuracies = []  # To store validation accuracies
+
     for epoch in range(num_epochs):
         # Training phase
-        model.train()  # Set model to training mode
+        model.train()
         train_loss = 0.0
         train_correct = 0
         train_total = 0
-        
+
         for images, labels in train_loader:
-            images, labels = images.to(device), labels.to(device)  # Move data to the GPU if available
-            
-            optimizer.zero_grad()  # Clear the previous gradients
-            outputs = model(images)  # Forward pass
-            loss = criterion(outputs, labels)  # Compute the loss
-            loss.backward()  # Backward pass to compute gradients
-            optimizer.step()  # Update model parameters
-            
-            train_loss += loss.item()  # Accumulate training loss
-            _, predicted = torch.max(outputs.data, 1)  # Get predicted class
-            train_total += labels.size(0)  # Total number of samples
-            train_correct += (predicted == labels).sum().item()  # Count correct predictions
-        
-        # Compute average training loss and accuracy for the epoch
-        train_loss = train_loss / len(train_loader)  # Average training loss
-        train_accuracy = 100 * train_correct / train_total  # Training accuracy as a percentage
+            images, labels = images.to(device), labels.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            train_loss += loss.item()
+            _, predicted = torch.max(outputs.data, 1)
+            train_total += labels.size(0)
+            train_correct += (predicted == labels).sum().item()
+
+        train_loss /= len(train_loader)
+        train_accuracy = 100 * train_correct / train_total
         train_losses.append(train_loss)
         train_accuracies.append(train_accuracy)
-        
+
+        # Validation phase
+        model.eval()
+        val_loss = 0.0
+        val_correct = 0
+        val_total = 0
+
+        with torch.no_grad():
+            for images, labels in val_loader:
+                images, labels = images.to(device), labels.to(device)
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+
+                val_loss += loss.item()
+                _, predicted = torch.max(outputs.data, 1)
+                val_total += labels.size(0)
+                val_correct += (predicted == labels).sum().item()
+
+        val_loss /= len(val_loader)
+        val_accuracy = 100 * val_correct / val_total
+        val_losses.append(val_loss)
+        val_accuracies.append(val_accuracy)
+
+        # Call the learning rate scheduler
+        scheduler.step(val_loss)  # Scheduler adjusts learning rate based on validation loss
+
         # Print progress for each epoch
         print(f'Epoch [{epoch+1}/{num_epochs}]')
         print(f'Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}%')
+        print(f'Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%')
         print('-' * 50)
-    
-    return train_losses, train_accuracies
+
+    return train_losses, val_losses, train_accuracies, val_accuracies
 
 
 # Evaluate the trained model on test data and generate performance metrics

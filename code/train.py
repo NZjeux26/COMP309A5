@@ -5,6 +5,8 @@ from torch.utils.data import DataLoader
 import os
 import torchvision.transforms as transforms
 from fruit_class import FruitClassifierCNN, FruitDataset, plot_training_history, train_model
+from torch.utils.data import random_split
+from torch.optim.lr_scheduler import ReduceLROnPlateau  # Import the scheduler
 
 def main():
     # Hyperparameters
@@ -12,6 +14,7 @@ def main():
     num_epochs = 40  # Number of training epochs
     batch_size = 32  # Batch size for training
     learning_rate = 0.001  # Learning rate for optimizer
+    val_split = 0.1  # Use 10% of the data for validation
 
     # GPU Setup
     if torch.cuda.is_available():
@@ -32,26 +35,35 @@ def main():
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize RGB channels
     ])
 
-    # Load the full training dataset (no splitting)
-    train_data_path = os.path.join('..', 'split_data/train_data')  # Root directory for training dataset
-    train_dataset = FruitDataset(root_dir=train_data_path, transform=transform)
+    # Load the full dataset
+    train_data_path = os.path.join('..', 'split_data/train_data')  # Root directory for dataset
+    full_dataset = FruitDataset(root_dir=train_data_path, transform=transform)
 
-    # Create DataLoader for the entire training dataset
+    # Split dataset into training and validation sets
+    val_size = int(val_split * len(full_dataset))
+    train_size = len(full_dataset) - val_size
+    train_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
+
+    # Create DataLoader for training and validation sets
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     # Initialize model, loss function, and optimizer
     model = FruitClassifierCNN(num_classes=num_classes).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
+    # Define the learning rate scheduler
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.1, verbose=True)
+
     # Train the model
     print("\nStarting training...")
-    train_losses, train_accuracies = train_model(
-        model, train_loader, criterion, optimizer, num_epochs, device
+    train_losses, val_losses, train_accuracies, val_accuracies = train_model(
+        model, train_loader, val_loader, criterion, optimizer, scheduler, num_epochs, device
     )
 
-    # Plot training history (loss and accuracy)
-    plot_training_history(train_losses, [], train_accuracies, [])
+    # Plot training and validation history (loss and accuracy)
+    plot_training_history(train_losses, val_losses, train_accuracies, val_accuracies)
     print("\nTraining history plot saved as 'training_history.png'")
 
     # Save the trained model and optimizer state
