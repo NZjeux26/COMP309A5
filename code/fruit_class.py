@@ -9,22 +9,6 @@ from sklearn.metrics import precision_recall_fscore_support, accuracy_score, con
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# # Check if CUDA is available and print GPU details if present
-# if torch.cuda.is_available():
-#     print("CUDA available:", torch.cuda.is_available())
-#     print("GPU Device:", torch.cuda.get_device_name(0))
-#     torch.cuda.empty_cache()  # Clear any cached data to free up memory
-# else:
-#     print("CUDA not available.")
-
-# # Check if MPS (Metal Performance Shaders) is available (for Mac with Apple Silicon)
-# if torch.backends.mps.is_available():
-#     print("MPS (Metal Performance Shaders) available.")
-#     # You can set the default device to MPS if available
-#     device = torch.device("mps")
-# else:
-#     print("MPS not available.")
-
 # Function to plot and save confusion matrix
 def plot_confusion_matrix(true_labels, predictions, classes):
     cm = confusion_matrix(true_labels, predictions)
@@ -77,7 +61,7 @@ class FruitClassifierCNN(nn.Module):
         # Fully connected layers
         self.fc_layers = nn.Sequential(
             # The input to the fully connected layer is now 256 * 18 * 18
-            nn.Linear(256 * 18 * 18, 512),
+            nn.Linear(256 * 7 * 7, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
             nn.Dropout(0.3),

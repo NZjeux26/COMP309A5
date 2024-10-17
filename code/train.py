@@ -27,7 +27,7 @@ def main():
 
     # Define image transformations: resize to 299x299, convert to tensor, and normalize
     transform = transforms.Compose([
-        transforms.Resize((299, 299)),
+        transforms.Resize((112, 112)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
         transforms.RandomRotation(20),
@@ -54,7 +54,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # Define the learning rate scheduler
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.1, verbose=True)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.1)
 
     # Train the model
     print("\nStarting training...")
