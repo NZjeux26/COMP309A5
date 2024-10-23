@@ -4,7 +4,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset
 from PIL import Image
 import os
-import numpy as np
+import time
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -119,6 +119,9 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler
     val_accuracies = []  # To store validation accuracies
 
     for epoch in range(num_epochs):
+        # Start timer for this epoch
+        epoch_start_time = time.time()
+        
         # Training phase
         model.train()
         train_loss = 0.0
@@ -168,11 +171,15 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler
 
         # Call the learning rate scheduler
         scheduler.step(val_loss)  # Scheduler adjusts learning rate based on validation loss
-
+        
+        # End timer for this epoch
+        epoch_end_time = time.time()
+        epoch_duration = epoch_end_time - epoch_start_time
         # Print progress for each epoch
         print(f'Epoch [{epoch+1}/{num_epochs}]')
         print(f'Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}%')
         print(f'Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%')
+        print(f"Epoch {epoch+1} took {epoch_duration // 60:.0f} minutes {epoch_duration % 60:.0f} seconds")
         print('-' * 50)
 
     return train_losses, val_losses, train_accuracies, val_accuracies

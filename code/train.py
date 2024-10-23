@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 import os
+import time
 import torchvision.transforms as transforms
 from fruit_class import FruitClassifierCNN, FruitDataset, plot_training_history, train_model
 from torch.utils.data import random_split
@@ -56,11 +57,19 @@ def main():
     # Define the learning rate scheduler
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.1)
 
+    # Start timer for the total training time
+    total_start_time = time.time()
+    
     # Train the model
     print("\nStarting training...")
     train_losses, val_losses, train_accuracies, val_accuracies = train_model(
         model, train_loader, val_loader, criterion, optimizer, scheduler, num_epochs, device
     )
+    
+    # End timer for the total training time
+    total_end_time = time.time()
+    total_duration = total_end_time - total_start_time
+    print(f"\nTotal training time: {total_duration // 60:.0f} minutes {total_duration % 60:.0f} seconds")
 
     # Plot training and validation history (loss and accuracy)
     plot_training_history(train_losses, val_losses, train_accuracies, val_accuracies)
