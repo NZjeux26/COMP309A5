@@ -24,7 +24,7 @@ def main():
     ])
 
     # Load the separate test dataset
-    test_data_path = os.path.join('..', 'split_data/test_data')  # Path to the test dataset
+    test_data_path = os.path.join('..', 'test_data')  # Path to the test dataset
     test_dataset = FruitDataset(root_dir=test_data_path, transform=transform)
 
     # Create DataLoader for the test dataset
