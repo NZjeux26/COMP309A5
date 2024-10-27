@@ -35,8 +35,12 @@ def plot_training_history(train_losses, val_losses, train_accuracies, val_accura
     plt.savefig('training_history.png')  # Save the plot to a file
     plt.close()
 
-# Function to train the model
+# This function trains a given model using a specified optimiser, loss criterion, and learning rate scheduler.
+# It tracks the training and validation losses, as well as accuracies, across a specified number of epochs. 
+# After each epoch, it adjusts the learning rate based on the validation loss. The function returns lists of 
+# training and validation losses and accuracies to enable further analysis.l
 def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler, num_epochs, device):
+    #Lists to store the losses and accuracies for each epoch
     train_losses = []
     val_losses = []  # To store validation losses
     train_accuracies = []
@@ -51,21 +55,24 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler
         train_loss = 0.0
         train_correct = 0
         train_total = 0
-
+        
+        #Iterate over batches in training set
         for images, labels in train_loader:
-            images, labels = images.to(device), labels.to(device)
+            images, labels = images.to(device), labels.to(device) #Move to device selected
 
-            optimizer.zero_grad()
+            optimizer.zero_grad()  # Clear previous gradients
             outputs = model(images)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs, labels) #compute losses
             loss.backward()
-            optimizer.step()
-
+            optimizer.step() #update model
+            
+            # Track loss and accuracy
             train_loss += loss.item()
             _, predicted = torch.max(outputs.data, 1)
             train_total += labels.size(0)
             train_correct += (predicted == labels).sum().item()
-
+        
+        # Calculate average training loss and accuracy for the epoch
         train_loss /= len(train_loader)
         train_accuracy = 100 * train_correct / train_total
         train_losses.append(train_loss)
@@ -76,7 +83,8 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler
         val_loss = 0.0
         val_correct = 0
         val_total = 0
-
+        
+        #Iterate over batches in validation set without gradient calculation
         with torch.no_grad():
             for images, labels in val_loader:
                 images, labels = images.to(device), labels.to(device)
@@ -87,18 +95,18 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler
                 _, predicted = torch.max(outputs.data, 1)
                 val_total += labels.size(0)
                 val_correct += (predicted == labels).sum().item()
-
+        #Track validation loss and accuracy
         val_loss /= len(val_loader)
         val_accuracy = 100 * val_correct / val_total
         val_losses.append(val_loss)
         val_accuracies.append(val_accuracy)
 
-        # Call the learning rate scheduler
         scheduler.step(val_loss)  # Scheduler adjusts learning rate based on validation loss
         
         # End timer for this epoch
         epoch_end_time = time.time()
         epoch_duration = epoch_end_time - epoch_start_time
+        
         # Print progress for each epoch
         print(f'Epoch [{epoch+1}/{num_epochs}]')
         print(f'Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}%')
@@ -140,48 +148,54 @@ class FruitDataset(Dataset):
 
         return image, label  # Return image and label pair
 
+# This class defines a CNN architecture for classifying images of fruits into a specified number of classes.
+# The model is designed to process 112x112 RGB images and includes convolutional, pooling, batch normalisation, 
+# dropout, and fully connected layers to extract features and perform classification.
+
 class FruitClassifierCNN(nn.Module):
     def __init__(self, num_classes=3):
         super(FruitClassifierCNN, self).__init__()
 
         # Convolutional layers
         self.conv_layers = nn.Sequential(
-            # First convolutional block: (3 x 299 x 299) -> (32 x 149 x 149)
+            # First convolutional block (3 x 112 x 112) -> output (32 x 56 x 56)
             nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),  # 299x299 -> 149x149
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout2d(0.1),
             
-            # Second convolutional block: (32 x 149 x 149) -> (64 x 74 x 74)
+            # Second convolutional block (32 x 56 x 56) -> output (64 x 28 x 28)
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),  # 149x149 -> 74x74
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout2d(0.1),
              
-            # Third convolutional block: (64 x 74 x 74) -> (128 x 37 x 37)
+            # Third convolutional block (64 x 28 x 28) -> output (128 x 14 x 14)
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(128),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),  # 74x74 -> 37x37
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout2d(0.2),
              
-            # Fourth convolutional block: (128 x 37 x 37) -> (256 x 18 x 18)
+            # Fourth convolutional block (128 x 14 x 14) -> output (256 x 7 x 7)
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(256),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),  # 37x37 -> 18x18
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout2d(0.2),
         )
 
         # Fully connected layers
         self.fc_layers = nn.Sequential(
-            # The input to the fully connected layer is now 256 * 18 * 18
+            # Fully connected block 1: input (256 * 7 * 7) -> output (512)
             nn.Linear(256 * 7 * 7, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
             nn.Dropout(0.3),
+            
+            # Fully connected block 2: 512 -> 256
             nn.Linear(512, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
@@ -212,14 +226,14 @@ def main():
         device = torch.device('cpu')
         print("Using CPU")
 
-    # Define image transformations: resize to 299x299, convert to tensor, and normalize
+    # Define image transformations: resize to 112x112, convert to tensor, and normalise
     transform = transforms.Compose([
         transforms.Resize((112, 112)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
         transforms.RandomRotation(20),
         transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize RGB channels
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalise RGB channels
     ])
 
     # Load the full dataset
@@ -235,7 +249,7 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
-    # Initialize model, loss function, and optimizer
+    # Initialise model, loss function, and optimizer
     model = FruitClassifierCNN(num_classes=num_classes).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -264,6 +278,7 @@ def main():
     # Save the trained model and optimizer state
     model_save_path = 'fruit_classifier.pth'
     
+    #save the state_dict
     #torch.save(model, model_save_path)
     torch.save({
         'epoch': num_epochs,

@@ -49,10 +49,10 @@ class FruitClassifier(nn.Module):
         self.layers = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.ReLU(),
-            nn.Dropout(0.4),
+            nn.Dropout(0.1),
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
-            nn.Dropout(0.4),
+            nn.Dropout(0.3),
             nn.Linear(hidden_size, num_classes)
         )
 
@@ -323,12 +323,12 @@ def main():
     
     # Plot training history (loss and accuracy)
     plot_training_history(train_losses, val_losses, train_accuracies, val_accuracies)
-    print("\nTraining history plot saved as 'training_history.png'")
+    print("\nTraining history plot saved as 'training_historyMLP.png'")
 
     # Evaluate the trained model on the test set
     print("\nEvaluating model on test set:")
     evaluate_model(model, test_loader, device, full_dataset.classes)
-    print("\nConfusion matrix saved as 'confusion_matrix.png'")
+    print("\nConfusion matrix saved as 'confusion_matrixMLP.png'")
 
     # # Save the trained model and optimizer state as a checkpoint
     # model_save_path = 'fruit_classifier.pth'
