@@ -296,7 +296,7 @@ def main():
     ])
 
     # Load the dataset
-    train_data_path = os.path.join('..', 'train_data')  # Root directory for dataset
+    train_data_path = os.path.join('.', 'train_data')  # Root directory for dataset *Changed to one . instead of two
     full_dataset = FruitDataset(root_dir=train_data_path, transform=transform)
     
     # Calculate split sizes for training, validation, and testing
